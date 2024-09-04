@@ -1,0 +1,219 @@
+#!/bin/bash
+
+source "$CONFIG_DIR/colors.sh"
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+launchctl unload -F /System/Library/LaunchAgents/com.apple.OSDUIHelper.plist >/dev/null 2>&1 &
+
+# BAR SETTINGS
+bar=(
+  height=32
+  position=top
+  blur_radius=5
+  color=$BAR_COLOR
+  border_color=$BAR_BORDER_COLOR
+  border_width=2
+  padding_left=5
+  padding_right=5
+  margin=6
+  y_offset=3
+  corner_radius=12
+)
+sketchybar --bar "${bar[@]}"
+
+
+# BRIGHTNEESS ( ICON SETTINGS ) 
+brightness_icon=(
+	click_script="$PLUGIN_DIR/brightness_click.sh"
+	padding_left=0
+  padding_right=0
+	icon=􀆮
+	label.width=5
+	label.align=left
+)
+# BRIGHTNESS ( SLIDER SETTINGS )
+brightness_slider=(
+      script="$PLUGIN_DIR/brightness.sh"
+      updates=on
+      padding_right=7
+      label.drawing=off
+      icon.drawing=off
+      slider.highlight_color=$SLIDER_HIGHLIGHT_COLOR
+      slider.background.height=7
+      slider.background.corner_radius=3
+      slider.background.color=$SLIDER_BG_COLOR
+      slider.knob=􀏄
+      slider.knob.drawing=on
+)
+
+# VOLUME ( ICON SETTINGS ) 
+volume_icon=(
+	click_script="$PLUGIN_DIR/volume_click.sh"
+	padding_left=7
+	icon=􀊩
+	icon.width=0
+	icon.align=left
+	icon.color=$VOLUME_ICON_BG_COLOR
+	label.width=25
+	label.align=left
+)
+# VOLUME ( SLIDER SETTINGS )
+volume_slider=(
+      script="$PLUGIN_DIR/volume.sh"
+      updates=on
+      padding_right=7
+      label.drawing=off
+      icon.drawing=off
+      slider.highlight_color=$SLIDER_HIGHLIGHT_COLOR
+      slider.background.height=7
+      slider.background.corner_radius=3
+      slider.background.color=$SLIDER_BG_COLOR
+      slider.knob=􀏄
+      slider.knob.drawing=on
+)
+
+# DEFAULTS
+default=(
+  icon.font="Hack Nerd Font:Bold:16.0"
+  label.font="Hack Nerd Font:Bold:16.0"
+  label.color=0xffecdab3
+  icon.color=0xffecdab3
+  background.corner_radius=12
+  background.height=22
+  popup.background.corner_radius=12
+  popup.y_offset=3
+  popup.blur_radius=60
+  popup.background.color=0x9e968977
+  popup.background.border_width=2
+  popup.background.border_color=0x9e282828
+)
+sketchybar --default "${default[@]}"
+
+# APPLE ICON
+sketchybar --add item apple.logo left                                                      \
+          --set apple.logo icon=                                                          \
+                icon.color=0xffebdbb1                                                      \
+                padding_left=9                                                             \
+                padding_right=0                                                            \
+                label.drawing=off                                                          \
+                click_script="sketchybar --set \$NAME popup.drawing=toggle"
+
+# APPLE POPUPS
+sketchybar --add item apple.preferences popup.apple.logo                                   \
+              --set apple.preferences icon=                                               \
+                              icon.padding_left=7                                          \
+                              icon.padding_right=7                                         \
+                              label="Settings"                                             \
+                              label.padding_right=7                                        \
+                              click_script="open -a 'System Preferences';                    
+                                        sketchybar --set apple.logo popup.drawing=off"
+
+sketchybar --add item apple.lock popup.apple.logo                                          \
+              --set apple.lock icon=                                                      \
+                              icon.padding_left=9                                          \
+                              icon.padding_right=7                                         \
+                              label="Restart"                                              \
+                              label.padding_right=7                                        \
+                              click_script="osascript -e 'tell application \"System Events\" to restart';                           
+                                        sketchybar -m --set apple.logo popup.drawing=off"
+
+
+# SPACE INDICATIORS
+SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
+for i in "${!SPACE_ICONS[@]}"
+do
+  sid="$(($i+1))"
+  space=(
+    space="$sid"
+    icon="${SPACE_ICONS[i]}"
+    icon.padding_left=7
+    icon.padding_right=7
+    icon.color=0xffecdab3
+    background.color=0x9e968977
+    background.padding_left=7
+    label.drawing=off
+    script="$PLUGIN_DIR/space.sh"
+    click_script="yabai -m space --focus $sid"
+  )
+  sketchybar --add space space."$sid" left --set space."$sid" "${space[@]}"
+done
+
+# CHEVRON SEPARATOR
+sketchybar --add item chevron left                                                         \
+            --set chevron icon= label.drawing=off                                         \
+                                padding_left=7 padding_right=7                             
+
+# WINDOW TITLE
+sketchybar --add item title left                                                           \
+            --set title icon.drawing=off                                                   \
+                                label.padding_left=7                                       \
+                                label.padding_right=7                                      \
+                                background.color=0x9e968977                                \
+                                background.padding_left=7                                  \
+                                script="$PLUGIN_DIR/front_app.sh"                          \
+                                title update_freq=0                                        \
+            --subscribe title window_focus front_app_switched space_change title_change
+
+# VOLUME
+sketchybar --add item volume_icon e                                                        \
+            --set volume_icon "${volume_icon[@]}"                                          \
+              --add slider volume e                                                        \
+                                --set volume "${volume_slider[@]}"                         \
+                                --subscribe volume volume_change mouse.clicked             \
+
+# BRIGHTNESS
+sketchybar --add item brightness_icon e                                                    \
+            --set brightness_icon "${brightness_icon[@]}"
+            
+sketchybar --add slider brightness e                                                       \
+                                --set brightness "${brightness_slider[@]}"                 \
+                                --subscribe brightness brightness_change mouse.clicked     \
+            --add bracket control_bracket brightness brightness_icon volume_icon volume    \
+                                --set control_bracket background.color=$CONTROLS_BRACKET_COLOR 
+
+# CALENDAR
+sketchybar --add item cal right                                                            \
+          --set cal update_freq=30                                                         \
+                                icon=􀉉                                                     \
+                                icon.padding_left=7                                        \
+                                icon.padding_right=7                                       \
+                                label.padding_right=7                                      \
+                                icon.y_offset=1                                            \
+                                script="$PLUGIN_DIR/calendar.sh"                           \
+                                background.color=$CAL_BG_COLOR                                \
+                                background.padding_left=4                                  \
+# CLOCK 
+sketchybar --add item clock q                                                              \
+          --set clock update_freq=5                                                        \
+                                icon=􀐬                                                     \
+                                icon.padding_left=7                                        \
+                                icon.padding_right=7                                       \
+                                label.padding_right=7                                      \
+				icon.y_offset=1						   \
+                                script="$PLUGIN_DIR/clock.sh"                              \
+                                background.color=$CLOCK_BG_COLOR                                \
+                                background.padding_left=7                                  \
+
+# BATTERY
+sketchybar --add item battery q                                                            \
+          --set battery update_freq=10                                                     \
+                                script="$PLUGIN_DIR/battery.sh"                            \
+                                icon.padding_left=7                                        \
+                                icon.padding_right=5                                       \
+                                label.padding_right=7                                      \
+                                background.color=$BATTERY_BG_COLOR                                \
+                                background.padding_right=7                                 \
+          --subscribe battery system_woke power_source_change
+
+# WIFI
+sketchybar --add item wifi right                                                           \
+            --set wifi icon=                                                              \
+                                icon.color=$WIFI_ICON_COLOR                                \
+                                script="$PLUGIN_DIR/wifi.sh"                               \
+                                icon.padding_left=7                                        \
+                                icon.padding_right=7                                       \
+                                label.padding_right=7                                      \
+                                background.color=$WIFI_BG_COLOR                            \
+            --subscribe wifi wifi_change
+
+sketchybar --update
+echo "...sketchybar updated."
