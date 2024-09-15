@@ -8,10 +8,10 @@ launchctl unload -F /System/Library/LaunchAgents/com.apple.OSDUIHelper.plist >/d
 bar=(
   height=32
   position=top
-  blur_radius=5
+  blur_radius=0
   color=$BAR_COLOR
-  border_color=$BAR_BORDER_COLOR
-  border_width=2
+  #border_color=$BAR_BORDER_COLOR
+  #border_width=2
   padding_left=5
   padding_right=5
   margin=6
@@ -73,25 +73,25 @@ volume_slider=(
 
 # DEFAULTS
 default=(
-  icon.font="Hack Nerd Font:Bold:16.0"
-  label.font="Hack Nerd Font:Bold:16.0"
-  label.color=0xffecdab3
-  icon.color=0xffecdab3
-  background.corner_radius=12
+  icon.font="JetBrainsMono Nerd Font:Bold:16.0"
+  label.font="JetBrainsMono Nerd Font:Bold:16.0"
+  label.color=$TEXT_COLOR
+  icon.color=$ICON_COLOR
+  background.corner_radius=6
   background.height=22
   popup.background.corner_radius=12
   popup.y_offset=3
   popup.blur_radius=60
-  popup.background.color=0x9e968977
+  popup.background.color=$POPUP_BG_COLOR
+  popup.background.border_color=$POPUP_BG_COLOR
   popup.background.border_width=2
-  popup.background.border_color=0x9e282828
 )
 sketchybar --default "${default[@]}"
 
 # APPLE ICON
 sketchybar --add item apple.logo left                                                      \
           --set apple.logo icon=                                                          \
-                icon.color=0xffebdbb1                                                      \
+                icon.color=$APPLE_ICON_COLOR                                                      \
                 padding_left=9                                                             \
                 padding_right=0                                                            \
                 label.drawing=off                                                          \
@@ -127,8 +127,8 @@ do
     icon="${SPACE_ICONS[i]}"
     icon.padding_left=7
     icon.padding_right=7
-    icon.color=0xffecdab3
-    background.color=0x9e968977
+    icon.color=$SPACE_ICON_COLOR
+    background.color=$SPACE_BG_COLOR
     background.padding_left=7
     label.drawing=off
     script="$PLUGIN_DIR/space.sh"
@@ -147,11 +147,23 @@ sketchybar --add item title left                                                
             --set title icon.drawing=off                                                   \
                                 label.padding_left=7                                       \
                                 label.padding_right=7                                      \
-                                background.color=0x9e968977                                \
+                                background.color=$TITLE_BG_COLOR                                \
                                 background.padding_left=7                                  \
                                 script="$PLUGIN_DIR/front_app.sh"                          \
                                 title update_freq=0                                        \
             --subscribe title window_focus front_app_switched space_change title_change
+
+
+# BATTERY
+sketchybar --add item battery e                                                            \
+          --set battery update_freq=10                                                     \
+                                script="$PLUGIN_DIR/battery.sh"                            \
+                                icon.padding_left=7                                        \
+                                icon.padding_right=5                                       \
+                                label.padding_right=7                                      \
+                                background.color=$BATTERY_BG_COLOR                                \
+                                background.padding_right=7                                 \
+          --subscribe battery system_woke power_source_change
 
 # VOLUME
 sketchybar --add item volume_icon e                                                        \
@@ -169,40 +181,25 @@ sketchybar --add slider brightness e                                            
                                 --subscribe brightness brightness_change mouse.clicked     \
             --add bracket control_bracket brightness brightness_icon volume_icon volume    \
                                 --set control_bracket background.color=$CONTROLS_BRACKET_COLOR 
-
-# CALENDAR
-sketchybar --add item cal right                                                            \
-          --set cal update_freq=30                                                         \
-                                icon=􀉉                                                     \
-                                icon.padding_left=7                                        \
-                                icon.padding_right=7                                       \
-                                label.padding_right=7                                      \
-                                icon.y_offset=1                                            \
-                                script="$PLUGIN_DIR/calendar.sh"                           \
-                                background.color=$CAL_BG_COLOR                                \
-                                background.padding_left=4                                  \
+                                \
 # CLOCK 
 sketchybar --add item clock q                                                              \
           --set clock update_freq=5                                                        \
-                                icon=􀐬                                                     \
-                                icon.padding_left=7                                        \
-                                icon.padding_right=7                                       \
+                                label.padding_left=7                                       \
                                 label.padding_right=7                                      \
 				icon.y_offset=1						   \
                                 script="$PLUGIN_DIR/clock.sh"                              \
                                 background.color=$CLOCK_BG_COLOR                                \
                                 background.padding_left=7                                  \
 
-# BATTERY
-sketchybar --add item battery q                                                            \
-          --set battery update_freq=10                                                     \
-                                script="$PLUGIN_DIR/battery.sh"                            \
-                                icon.padding_left=7                                        \
-                                icon.padding_right=5                                       \
+# CALENDAR
+sketchybar --add item cal q                                                            \
+          --set cal update_freq=30                                                         \
+                                label.padding_left=7                                       \
                                 label.padding_right=7                                      \
-                                background.color=$BATTERY_BG_COLOR                                \
-                                background.padding_right=7                                 \
-          --subscribe battery system_woke power_source_change
+                                script="$PLUGIN_DIR/calendar.sh"                           \
+                                background.color=$CAL_BG_COLOR                                \
+                                background.padding_left=4  
 
 # WIFI
 sketchybar --add item wifi right                                                           \
@@ -210,7 +207,7 @@ sketchybar --add item wifi right                                                
                                 icon.color=$WIFI_ICON_COLOR                                \
                                 script="$PLUGIN_DIR/wifi.sh"                               \
                                 icon.padding_left=7                                        \
-                                icon.padding_right=7                                       \
+                                icon.padding_right=5                                       \
                                 label.padding_right=7                                      \
                                 background.color=$WIFI_BG_COLOR                            \
             --subscribe wifi wifi_change
